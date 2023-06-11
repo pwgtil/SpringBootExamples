@@ -14,7 +14,7 @@ class HelloListenerOne : ApplicationListener<HelloEvent> {
     override fun onApplicationEvent(event: HelloEvent) {
         "First listener began to handle the event".let(::println)
         try {
-            Thread.sleep(500)
+            Thread.sleep(100)
         } catch (e: InterruptedException) {
             throw RuntimeException(e)
         }
@@ -27,7 +27,7 @@ class HelloListenerTwo : ApplicationListener<HelloEvent> {
     override fun onApplicationEvent(event: HelloEvent) {
         "Second listener began to handle the event".let(::println)
         try {
-            Thread.sleep(500)
+            Thread.sleep(100)
         } catch (e: InterruptedException) {
             throw RuntimeException(e)
         }
@@ -51,7 +51,7 @@ class RunnerEL(private val eventPublisher: ApplicationEventPublisher) : CommandL
         val event: HelloEvent = HelloEvent(this, "Hello World")
         eventPublisher.publishEvent(event)
         eventPublisher.publishEvent(PojoEvent())
-        Thread.sleep(500)
+        Thread.sleep(100)
         eventPublisher.publishEvent(event)
         "The application was ended".let(::println)
     }

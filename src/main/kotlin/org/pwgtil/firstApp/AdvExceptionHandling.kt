@@ -1,17 +1,21 @@
 package org.pwgtil.firstApp
 
+
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Min
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.ControllerAdvice
-import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.collections.LinkedHashMap
 
-class FlightInfo(var id: Long, var from: String, var to: String, var gate: String)
+class FlightInfo(@field:Min(1) var id: Long, var from: String, var to: String, var gate: String)
 
 class FlightNotFoundException(message: String) : RuntimeException(message)
 
@@ -23,7 +27,7 @@ class CustomErrorMessage(
 )
 
 @ControllerAdvice
-class ControllerExceptionHandler {
+class ControllerExceptionHandler : ResponseEntityExceptionHandler(){
     @ExceptionHandler(FlightNotFoundException::class)
     fun handleFlightNotFound(e: FlightNotFoundException, request: WebRequest): ResponseEntity<CustomErrorMessage> {
         val body = CustomErrorMessage(
@@ -34,6 +38,23 @@ class ControllerExceptionHandler {
         )
         return ResponseEntity(body, HttpStatus.NOT_FOUND)
     }
+
+    override fun handleMethodArgumentNotValid(
+        ex: MethodArgumentNotValidException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest
+    ): ResponseEntity<Any>? {
+        // just like a POJO, a Map is also converted to a JSON key-value structure
+        val body: MutableMap<String, Any> = LinkedHashMap()
+        body["status"] = status.value()
+        body["timestamp"] = LocalDateTime.now()
+        body["exception"] = ex.javaClass
+        body["customMessage"] = "This is a test message"
+
+        return ResponseEntity(body, headers, status)
+    }
+
 }
 
 @RestController
@@ -67,6 +88,11 @@ class FlightController {
             }
         }
         throw FlightNotFoundException("Flight info not found id=$id")
+    }
+
+    @PostMapping("/flights/new")
+    fun addNewFlightInfo(@Valid @RequestBody flightInfo: FlightInfo) {
+        flightInfoList.add(flightInfo)
     }
 
 //    // alternative to ControllerAdvice class. This can be even in a class that throws exceptions!!!!!!!
