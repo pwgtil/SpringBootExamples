@@ -50,6 +50,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler(){
         body["status"] = status.value()
         body["timestamp"] = LocalDateTime.now()
         body["exception"] = ex.javaClass
+        body["message"] = ex.message
         body["customMessage"] = "This is a test message"
 
         return ResponseEntity(body, headers, status)
