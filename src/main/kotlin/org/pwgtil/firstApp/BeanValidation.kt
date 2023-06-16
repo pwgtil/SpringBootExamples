@@ -3,16 +3,35 @@ package org.pwgtil.firstApp
 import jakarta.validation.Valid
 import jakarta.validation.constraints.*
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.*
+
 
 @RestController
+@Validated
 class SpecialAgentController {
+
+    @GetMapping("/agents/{id}")
+    fun validateAgentPathVariable(@PathVariable("id") @Min(1) id: Int): ResponseEntity<String> {
+        return ResponseEntity.ok("Agent id is valid.")
+    }
+
     @PostMapping("/agent")
-    fun validate(@RequestBody @Valid agent: SpecialAgent): ResponseEntity<String> {
+    fun validate(@Valid @RequestBody agent: SpecialAgent): ResponseEntity<String> {
         println("Test to console")
         return ResponseEntity.ok("Agent info is valid")
+    }
+
+//    @PostMapping("/agent")
+//    fun validate(@Valid @RequestBody agents: List<SpecialAgent>): ResponseEntity<String> {
+//        return ResponseEntity.ok("All agents have valid info.")
+//    }
+
+    @GetMapping("/agents")
+    fun validateAgentRequestParam(
+        @RequestParam("code") @Pattern(regexp = "[0-9]{1,3}") code: String
+    ): ResponseEntity<String> {
+        return ResponseEntity.ok("Agent code is valid.")
     }
 }
 
@@ -29,7 +48,7 @@ data class SpecialAgent(
     var code: String,
     @field:NotBlank //cannot be null and of length 0 after trimming
     var status: String,
-    @field:Min(value = 18, message = "Age must be greater than or equal to 18")
+    @field:Min(value = 18, message = "Age must be greater than or equal to 18") //message is available in all annotations in validations
     var age: Int,
     @field:NotEmpty //cannot be null and of length 0. Ok for " " value
     var motto: String,
